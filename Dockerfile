@@ -37,7 +37,7 @@ COPY lib/api-spec/package.json lib/api-spec/package.json
 COPY lib/api-zod/package.json lib/api-zod/package.json
 COPY lib/db/package.json lib/db/package.json
 RUN corepack enable && corepack prepare pnpm@10.17.1 --activate \
-  && pnpm install --frozen-lockfile
+  && pnpm install --no-frozen-lockfile
 
 COPY . .
 
