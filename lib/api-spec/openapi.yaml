@@ -1,0 +1,504 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.2.0
+  description: Web to APK Studio API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+  - name: account
+  - name: apk
+  - name: admin
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /me:
+    get:
+      operationId: getMe
+      tags: [account]
+      summary: Get the signed-in account summary
+      responses:
+        "200":
+          description: Account summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /me/builds:
+    get:
+      operationId: listMyBuilds
+      tags: [account]
+      summary: List recent builds for the signed-in account
+      responses:
+        "200":
+          description: Build history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BuildHistoryItem"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /me/premium/redeem:
+    post:
+      operationId: redeemPremiumKey
+      tags: [account]
+      summary: Redeem a premium access key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PremiumKeyInput"
+      responses:
+        "200":
+          description: Updated account summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountSummary"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /me/support:
+    post:
+      operationId: createSupportRequest
+      tags: [account]
+      summary: Send a support or premium request to the admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SupportRequestInput"
+      responses:
+        "201":
+          description: Support request created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SupportRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /apk/build:
+    post:
+      operationId: createApkBuild
+      tags: [apk]
+      summary: Build an Android APK from web source
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApkBuildInput"
+      responses:
+        "202":
+          description: APK build queued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApkBuildCreated"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          description: Free build limit reached
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LimitReachedResponse"
+  /apk/build/{id}:
+    get:
+      operationId: getApkBuild
+      tags: [apk]
+      summary: Get APK build status
+      parameters:
+        - $ref: "#/components/parameters/BuildId"
+      responses:
+        "200":
+          description: APK build status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApkBuildStatus"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /apk/build/{id}/download:
+    get:
+      operationId: downloadApkBuild
+      tags: [apk]
+      summary: Download a completed APK
+      parameters:
+        - $ref: "#/components/parameters/BuildId"
+      responses:
+        "200":
+          description: Android APK file
+          content:
+            application/vnd.android.package-archive:
+              schema:
+                type: string
+                format: binary
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/login:
+    post:
+      operationId: adminLogin
+      tags: [admin]
+      summary: Sign in to the admin console
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminLoginInput"
+      responses:
+        "200":
+          description: Admin session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSession"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /admin/logout:
+    post:
+      operationId: adminLogout
+      tags: [admin]
+      summary: End the admin session
+      responses:
+        "200":
+          description: Admin session ended
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+  /admin/session:
+    get:
+      operationId: getAdminSession
+      tags: [admin]
+      summary: Get the current admin session
+      responses:
+        "200":
+          description: Admin session state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSession"
+  /admin/overview:
+    get:
+      operationId: getAdminOverview
+      tags: [admin]
+      summary: Get admin dashboard metrics
+      responses:
+        "200":
+          description: Admin metrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOverview"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /admin/keys:
+    post:
+      operationId: createPremiumKey
+      tags: [admin]
+      summary: Generate a premium access key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePremiumKeyInput"
+      responses:
+        "201":
+          description: Premium key created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PremiumKey"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /admin/settings:
+    get:
+      operationId: getAdminSettings
+      tags: [admin]
+      summary: Read admin settings
+      responses:
+        "200":
+          description: Admin settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSettings"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    patch:
+      operationId: updateAdminSettings
+      tags: [admin]
+      summary: Update premium duration and contact settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminSettingsInput"
+      responses:
+        "200":
+          description: Updated admin settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSettings"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /admin/requests:
+    get:
+      operationId: listSupportRequests
+      tags: [admin]
+      summary: List support requests
+      responses:
+        "200":
+          description: Support requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SupportRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+components:
+  parameters:
+    BuildId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+    SuccessResponse:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+    AccountSummary:
+      type: object
+      required: [id, email, name, plan, freeBuildsUsed, freeBuildsLimit, premiumActive, premiumExpiresAt, contactUrl]
+      properties:
+        id: { type: string }
+        email: { type: string }
+        name: { type: string }
+        plan:
+          type: string
+          enum: [free, premium]
+        freeBuildsUsed: { type: number, minimum: 0 }
+        freeBuildsLimit: { type: number, minimum: 0 }
+        premiumActive: { type: boolean }
+        premiumExpiresAt: { type: ["string", "null"], format: date-time }
+        contactUrl: { type: string }
+    BuildHistoryItem:
+      type: object
+      required: [id, name, status, createdAt, fileName]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        status:
+          type: string
+          enum: [queued, building, ready, failed]
+        createdAt: { type: string, format: date-time }
+        fileName: { type: ["string", "null"] }
+        downloadUrl: { type: ["string", "null"] }
+    ApkBuildInput:
+      type: object
+      required: [name, packageName, themeColor, orientation, html, css, javascript]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 50 }
+        packageName:
+          type: string
+          pattern: "^[a-zA-Z][a-zA-Z0-9_]*(\\.[a-zA-Z][a-zA-Z0-9_]*)+$"
+        themeColor: { type: string, pattern: "^#[0-9A-Fa-f]{6}$" }
+        orientation:
+          type: string
+          enum: [portrait, landscape]
+        html: { type: string, maxLength: 500000 }
+        css: { type: string, maxLength: 500000 }
+        javascript: { type: string, maxLength: 500000 }
+        iconDataUrl: { type: ["string", "null"], maxLength: 4000000 }
+        splashDataUrl: { type: ["string", "null"], maxLength: 4000000 }
+        splashBackgroundColor: { type: string, pattern: "^#[0-9A-Fa-f]{6}$" }
+        splashText: { type: string, maxLength: 80 }
+        splashDelayMs: { type: number, minimum: 0, maximum: 300000 }
+        websiteUrl: { type: ["string", "null"], maxLength: 2048, format: uri }
+        buildMode: { type: string, enum: [html, website] }
+    ApkBuildCreated:
+      type: object
+      required: [id, status, message]
+      properties:
+        id: { type: string }
+        status:
+          type: string
+          enum: [queued, building]
+        message: { type: string }
+    ApkBuildStatus:
+      type: object
+      required: [id, status, message, fileName, downloadUrl]
+      properties:
+        id: { type: string }
+        status:
+          type: string
+          enum: [queued, building, ready, failed]
+        message: { type: string }
+        fileName: { type: ["string", "null"] }
+        downloadUrl: { type: ["string", "null"] }
+    LimitReachedResponse:
+      type: object
+      required: [error, upgradeUrl]
+      properties:
+        error: { type: string }
+        upgradeUrl: { type: string }
+    PremiumKeyInput:
+      type: object
+      required: [key]
+      properties:
+        key: { type: string, minLength: 8, maxLength: 80 }
+    SupportRequestInput:
+      type: object
+      required: [subject, message]
+      properties:
+        subject: { type: string, minLength: 2, maxLength: 120 }
+        message: { type: string, minLength: 2, maxLength: 2000 }
+    SupportRequest:
+      type: object
+      required: [id, subject, message, status, createdAt, userEmail]
+      properties:
+        id: { type: string }
+        subject: { type: string }
+        message: { type: string }
+        status:
+          type: string
+          enum: [open, resolved]
+        createdAt: { type: string, format: date-time }
+        userEmail: { type: string }
+    AdminLoginInput:
+      type: object
+      required: [username, password]
+      properties:
+        username: { type: string, minLength: 1 }
+        password: { type: string, minLength: 1 }
+    AdminSession:
+      type: object
+      required: [authenticated, username]
+      properties:
+        authenticated: { type: boolean }
+        username: { type: string }
+    AdminOverview:
+      type: object
+      required: [users, builds, premiumUsers, openRequests, recentBuilds]
+      properties:
+        users: { type: number }
+        builds: { type: number }
+        premiumUsers: { type: number }
+        openRequests: { type: number }
+        recentBuilds:
+          type: array
+          items:
+            $ref: "#/components/schemas/BuildHistoryItem"
+    CreatePremiumKeyInput:
+      type: object
+      required: [days]
+      properties:
+        days: { type: number, minimum: 1, maximum: 3650 }
+        label: { type: string, maxLength: 80 }
+    PremiumKey:
+      type: object
+      required: [id, key, days, status, createdAt]
+      properties:
+        id: { type: string }
+        key: { type: string }
+        days: { type: number }
+        label: { type: ["string", "null"] }
+        status:
+          type: string
+          enum: [available, redeemed]
+        createdAt: { type: string, format: date-time }
+        redeemedAt: { type: ["string", "null"], format: date-time }
+    AdminSettingsInput:
+      type: object
+      properties:
+        premiumDays: { type: number, minimum: 1, maximum: 3650 }
+        contactUrl: { type: string, maxLength: 500 }
+        smtpHost: { type: string, maxLength: 160 }
+        smtpPort: { type: number, minimum: 1, maximum: 65535 }
+        smtpUser: { type: string, maxLength: 160 }
+        smtpAppPassword: { type: string, maxLength: 300 }
+        supportEmail: { type: string, maxLength: 160 }
+    AdminSettings:
+      type: object
+      required: [premiumDays, contactUrl, smtpHost, smtpPort, smtpUser, smtpConfigured, supportEmail]
+      properties:
+        premiumDays: { type: number }
+        contactUrl: { type: string }
+        smtpHost: { type: string }
+        smtpPort: { type: number }
+        smtpUser: { type: string }
+        smtpConfigured: { type: boolean }
+        supportEmail: { type: string }
