@@ -387,7 +387,7 @@ components:
         splashBackgroundColor: { type: string, pattern: "^#[0-9A-Fa-f]{6}$" }
         splashText: { type: string, maxLength: 80 }
         splashDelayMs: { type: number, minimum: 0, maximum: 300000 }
-        websiteUrl: { type: ["string", "null"], maxLength: 2048, format: uri }
+        websiteUrl: { type: ["string", "null"], maxLength: 2048 }
         buildMode: { type: string, enum: [html, website] }
     ApkBuildCreated:
       type: object

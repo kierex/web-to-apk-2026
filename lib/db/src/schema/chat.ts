@@ -1,5 +1,5 @@
 import { createInsertSchema } from "drizzle-zod";
-import { integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { integer, sqliteTable, text, uniqueIndex, type AnySQLiteColumn } from "drizzle-orm/sqlite-core";
 import { z } from "zod/v4";
 import { usersTable } from "./users";
 
@@ -11,7 +11,7 @@ export const chatMessagesTable = sqliteTable(
     content: text("content").notNull(),
     messageType: text("message_type", { enum: ["text", "image", "system", "announcement"] }).default("text").notNull(),
     imageUrl: text("image_url"),
-    replyToId: text("reply_to_id").references(() => chatMessagesTable.id),
+    replyToId: text("reply_to_id").references((): AnySQLiteColumn => chatMessagesTable.id),
     isDeleted: integer("is_deleted", { mode: "boolean" }).default(false).notNull(),
     createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(new Date()),
     updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(new Date()),
