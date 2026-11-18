@@ -1,4 +1,4 @@
-import { drizzle } from "drizzle-orm/better-sqlite3";
+import { drizzle, type BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import Database from "better-sqlite3";
 import * as schema from "./schema";
 import path from "node:path";
@@ -16,10 +16,10 @@ import { mkdirSync } from "node:fs";
 const dbDir = path.dirname(dbPath);
 mkdirSync(dbDir, { recursive: true });
 
-export const sqlite = new Database(dbPath);
+export const sqlite: InstanceType<typeof Database> = new Database(dbPath);
 sqlite.pragma("journal_mode = WAL");
 sqlite.pragma("foreign_keys = ON");
 
-export const db = drizzle(sqlite, { schema });
+export const db: BetterSQLite3Database<typeof schema> = drizzle(sqlite, { schema });
 
 export * from "./schema";
