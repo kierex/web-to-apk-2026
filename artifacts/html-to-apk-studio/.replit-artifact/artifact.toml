@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "HTML to APK Studio"
+description = "A browser-based studio that turns HTML, CSS, and JavaScript into installable Android APKs with customizable app metadata, icons, splash screens, and build downloads."
+version = "1.0.0"
+id = "artifacts/html-to-apk-studio"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18644
+
+[services.development]
+run = "pnpm --filter @workspace/html-to-apk-studio run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/html-to-apk-studio", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/html-to-apk-studio/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18644"
+BASE_PATH = "/"
