@@ -16,7 +16,7 @@ import { mkdirSync } from "node:fs";
 const dbDir = path.dirname(dbPath);
 mkdirSync(dbDir, { recursive: true });
 
-export const sqlite = new Database(dbPath);
+export const sqlite: Database.Database = new Database(dbPath);
 sqlite.pragma("journal_mode = WAL");
 sqlite.pragma("foreign_keys = ON");
 
